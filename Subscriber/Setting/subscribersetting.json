@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "Subscriber1",
+    "Channels": [ "blue" ] 
+  },
+  {
+    "Name": "Subscriber2",
+    "Channels": [ "green" ]
+  },
+  {
+    "Name": "Subscriber3",
+    "Channels": [ "yellow" ]
+  },
+  {
+    "Name": "Subscriber4",
+    "Channels": [ "blue", "green" ]
+  },
+  {
+    "Name": "Subscriber5",
+    "Channels": [ "*" ]
+  }
+]
