@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Common;
 using Microsoft.Extensions.Configuration;
-using Common;
 using Microsoft.Extensions.DependencyInjection;
+using Subscriber.Controller;
 using System.IO;
 using System.Reflection;
 
@@ -18,7 +15,6 @@ namespace Subscriber
             var serviceProvider = services.BuildServiceProvider();
             
             serviceProvider.GetService<App>().Run();
-            //Channel.Connection.Dispose();
         }
 
         private static IServiceCollection ConfigureServices()
@@ -29,11 +25,9 @@ namespace Subscriber
             services.AddSingleton(config);
 
             services.AddSingleton(x => new RedisChannel(config["CacheConnection"]));
-            services.AddTransient<ISubscriber, RedisSubscriber>();
+            services.AddTransient<SubscribeController>();
             services.AddTransient<RedisSubscriber>();
             services.AddTransient<App>();
-
-
             
             return services;
         }
@@ -42,7 +36,7 @@ namespace Subscriber
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsetting.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("./Settings/appsetting.json", optional: true, reloadOnChange: true)
                 .AddUserSecrets(Assembly.GetExecutingAssembly(), false);
 
             return builder.Build();
