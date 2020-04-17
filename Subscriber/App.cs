@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Subscriber.Job;
+using System;
 
 namespace Subscriber
 {
     public class App
     {
         private readonly IServiceProvider _serviceProvider;
+        private bool _cancelKeyPressed = false;
 
         public App(IServiceProvider serviceProvider)
         {
@@ -18,26 +16,39 @@ namespace Subscriber
 
         public void Run()
         {
+            Console.Clear();
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(controlCHandler);
+            Console.WriteLine("Press CTRL+C to quit.");
+
+            this.runSubscriberTask();
+
+            while (true)
+            {
+                if (_cancelKeyPressed)
+                {
+                    Console.WriteLine("Bye.");
+                    break;
+                }
+            }
+        }
+
+        private void runSubscriberTask()
+        {
             var serviceScopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
             using (var scope = serviceScopeFactory.CreateScope())
             {
-                var tasks = new List<Task>();
-                var lst = new List<string> { "blue", "green" };
-                foreach (var each in lst)
-                {
-                    var task = Task.Factory.StartNew(() =>
-                    {
-                        Console.WriteLine(each);
-                        var subscriber = scope.ServiceProvider.GetService<RedisSubscriber>();
-                        subscriber.Subscribe(each, (message) =>
-                        {
-                            Console.WriteLine(message);
-                        });
-                        Thread.Sleep(10000);
-                    });
-                    tasks.Add(task);
-                }
-                Task.WaitAll(tasks.ToArray());
+                var controller = scope.ServiceProvider.GetRequiredService<SubscribeController>();
+                controller.Configure();
+                controller.Start();
+            }
+        }
+
+        private void controlCHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            if (args.SpecialKey == ConsoleSpecialKey.ControlC)
+            {
+                _cancelKeyPressed = true;
+                args.Cancel = true;
             }
         }
     }

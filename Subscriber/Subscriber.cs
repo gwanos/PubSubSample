@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 
@@ -6,11 +7,11 @@ namespace Subscriber
 {
     public interface ISubscriber
     {
-        void Subscribe(string channel, Action<string> action);
-        Task SubscribeAsync(string channel, Action<string> action);
+        void Subscribe(List<string> channel, Action<string> action);
+        Task SubscribeAsync(List<string> channel, Action<string> action);
     }
 
-    public class RedisSubscriber : ISubscriber, IDisposable
+    public class RedisSubscriber : ISubscriber
     {
         private readonly RedisChannel _channel;
 
@@ -19,24 +20,20 @@ namespace Subscriber
             _channel = channel;
         }
 
-        public void Dispose()
-        {
-            _channel.Connection.Dispose();
-        }
-
-        public void Subscribe(string channel, Action<string> action)
+        public void Subscribe(List<string> channel, Action<string> action)
         {
             var subscriber = _channel.Connection.GetSubscriber();
-            var queue = subscriber.Subscribe(channel);
-            queue.OnMessage((handler) =>
+            channel.ForEach(x =>
             {
-                action.Invoke(handler.Message);
+                subscriber.Subscribe(x, (channel, message) =>
+                {
+                    action.Invoke(message);
+                });
             });
         }
 
-        public Task SubscribeAsync(string channel, Action<string> action)
+        public Task SubscribeAsync(List<string> channel, Action<string> action)
         {
-            _channel.Connection.Dispose();
             throw new NotImplementedException();
         }
     }

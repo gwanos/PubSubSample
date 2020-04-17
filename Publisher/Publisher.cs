@@ -10,18 +10,13 @@ namespace Publisher
         Task<long> PublishAsync(string channel, string message);
     }
 
-    public class RedisPublisher : IPublisher, IDisposable
+    public class RedisPublisher : IPublisher
     {
         private readonly RedisChannel _channel;
 
         public RedisPublisher(RedisChannel channel)
         {
             _channel = channel;
-        }
-
-        public void Dispose()
-        {
-            _channel.Connection.Dispose();
         }
 
         public long Publish(string channel, string message)
