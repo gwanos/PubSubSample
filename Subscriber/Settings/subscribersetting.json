@@ -13,7 +13,7 @@
   },
   {
     "Name": "Subscriber4",
-    "Channels": [ "blue", "green" ]
+    "Channels": [ "green", "yellow" ]
   },
   {
     "Name": "Subscriber5",
