@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace Common
 {
-    public class RedisChannel : IDisposable
+    public class RedisChannel
     {
         private readonly string _url;
 
@@ -13,11 +13,6 @@ namespace Common
         {
             _url = url;
             this.Connection = ConnectionMultiplexer.Connect(_url);
-        }
-
-        public void Dispose()
-        {
-            this.Connection.Dispose();  
         }
     }
 }
