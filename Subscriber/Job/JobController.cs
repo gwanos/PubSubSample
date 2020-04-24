@@ -28,7 +28,7 @@ namespace Subscriber.Job
         public void Configure()
         {
             var basePath = Directory.GetCurrentDirectory();
-            var path = basePath + @"\Settings\subscribersetting.json";
+            var path = Path.Combine(basePath, "Settings", "subscribersetting.json");
             using (var reader = new StreamReader(path))
             {
                 var json = reader.ReadToEnd();
@@ -41,25 +41,25 @@ namespace Subscriber.Job
             var serviceScopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
             using (var scope = serviceScopeFactory.CreateScope())
             {
-                var tasks = new List<Task>();
-                _jobs.ForEach(x =>
+                var tasks = _jobs.Select(job =>
                 {
-                    var task = Task.Factory.StartNew(() =>
+                    return Task.Factory.StartNew(() =>
                     {
-                        var sb = new StringBuilder(); ;
-                        x.Channels.ForEach(channel => sb.Append($"{channel} "));
-                        Console.WriteLine($"{x.Name} subscribe {sb}");
+                        var sb = new StringBuilder();
+                        job.Channels.ForEach(channel => sb.Append($"{channel} "));
+                        Console.WriteLine($"{job.Name} subscribe {sb}");
                         
                         var subscriber = scope.ServiceProvider.GetRequiredService<RedisSubscriber>();
-                        subscriber.Subscribe(x.Channels, (message) =>
+                        subscriber.Subscribe(job.Channels, (message) =>
                         {
-                            Console.WriteLine($"{x.Name} received a message: {message}");
+                            Console.WriteLine($"{job.Name} received a message: {message}");
                         });
                     });
-                    tasks.Add(task);
-                });
+                }).ToArray();
 
-                Task.WhenAll(tasks.ToArray());
+                Task.WaitAll(tasks);
+                Console.WriteLine($"...{tasks.Count()} subscribers are ready.");
+                Console.WriteLine($"========================================");
             }
         }
     }

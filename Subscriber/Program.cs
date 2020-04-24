@@ -1,7 +1,8 @@
 ﻿using Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Subscriber.Controller;
+using Subscriber.Job;
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -11,10 +12,17 @@ namespace Subscriber
     {
         private static void Main(string[] args)
         {
-            var services = ConfigureServices();
-            var serviceProvider = services.BuildServiceProvider();
-            
-            serviceProvider.GetService<App>().Run();
+            try
+            {
+                var services = ConfigureServices();
+                var serviceProvider = services.BuildServiceProvider();
+
+                serviceProvider.GetService<App>().Run();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         private static IServiceCollection ConfigureServices()

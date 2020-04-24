@@ -26,14 +26,15 @@ namespace Publisher
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
         
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var data = JsonConvert.DeserializeObject<PublishRequest>(requestBody);
 
             //
-            var result = _publisher.Publish(data.Channel, data.Message);
+            var publishMessage = $"[{data.Channel}] {data.Message}"; 
+            var result = await _publisher.PublishAsync(data.Channel, publishMessage).ConfigureAwait(false);
             
             //
-            string responseMessage = $"{result} clients received the message.";
+            var responseMessage = $"{result} clients received the message.";
             return new OkObjectResult(responseMessage);
         }
     }
